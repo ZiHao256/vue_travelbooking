@@ -30,6 +30,7 @@
         </el-form-item>
         <!-- 按钮区 -->
         <el-form-item class="button_box">
+          <el-button type="primary" @click="register">注册</el-button>
           <el-button type="primary" @click="login">登录</el-button>
           <el-button type="info" @click="resetLoginForm">重置</el-button>
         </el-form-item>
@@ -44,8 +45,8 @@ export default {
     return {
       // admin登录表单
       adminLoginForm: {
-        adminID: 1111,
-        password: 'qazedc12'
+        adminID: null,
+        password: null
       },
       // 表单验证
       adminLoginFormRules: {
@@ -91,8 +92,11 @@ export default {
         // window.sessionStorage.setItem("token", result.data.token)
 
         // 2.编程式导航到后台主页，路由地址 /home
-        this.$router.push('/home')
+        this.$router.push('/admin')
       })
+    },
+    register() {
+      this.$router.push('/register')
     }
   }
 }
