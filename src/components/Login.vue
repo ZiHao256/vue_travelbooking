@@ -6,19 +6,32 @@
         <img src="../assets/logo.png" alt="" />
       </div>
       <!-- 登录表单区域 -->
-      <el-form label-width="0px" class="login_form">
+      <el-form
+        ref="adminLoginFormRef"
+        label-width="0px"
+        :model="adminLoginForm"
+        :rules="adminLoginFormRules"
+        class="login_form"
+      >
         <!-- 用户名 -->
-        <el-form-item>
-          <el-input prefix-icon="el-icon-user"></el-input>
+        <el-form-item prop="adminID">
+          <el-input
+            prefix-icon="el-icon-user"
+            v-model.number="adminLoginForm.adminID"
+          ></el-input>
         </el-form-item>
         <!-- 密码 -->
-        <el-form-item>
-          <el-input prefix-icon="el-icon-lock"></el-input>
+        <el-form-item prop="password">
+          <el-input
+            prefix-icon="el-icon-lock"
+            v-model="adminLoginForm.password"
+            type="password"
+          ></el-input>
         </el-form-item>
         <!-- 按钮区 -->
         <el-form-item class="button_box">
-          <el-button type="primary">登录</el-button>
-          <el-button type="info">重置</el-button>
+          <el-button type="primary" @click="login">登录</el-button>
+          <el-button type="info" @click="resetLoginForm">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -26,7 +39,63 @@
 </template>
 
 <script>
-export default {}
+export default {
+  data () {
+    return {
+      // admin登录表单
+      adminLoginForm: {
+        adminID: 1111,
+        password: 'qazedc12'
+      },
+      // 表单验证
+      adminLoginFormRules: {
+        adminID: [
+          { required: true, message: '请输入登录ID', trigger: 'blur' },
+          { min: 100, max: 99999999, type: 'number', message: '长度在 3 到 8 的数字', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入password', trigger: 'blur' },
+          { min: 3, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  methods: {
+    // 重置login表单
+    resetLoginForm () {
+      this.$refs.adminLoginFormRef.resetFields()
+    },
+    // 表单预验证
+    login () {
+      // 回调函数，登陆时预验证
+      this.$refs.adminLoginFormRef.validate(async (valid) => {
+        // console.log(valid)
+
+        if (!valid) return
+
+        var adminID = this.adminLoginForm.adminID
+        var password = this.adminLoginForm.password
+        const postData = this.$qs.stringify({
+          adminID: adminID,
+          password: password
+        })
+
+        const { data: result } = await this.$http.post('admin_login', postData)
+        console.log(result)
+
+        if (result.error_num !== 0) return this.$message.error(result.msg)
+        else this.$message.success(result.msg)
+
+        // 登陆成功之后
+        // 1. 保存session
+        // window.sessionStorage.setItem("token", result.data.token)
+
+        // 2.编程式导航到后台主页，路由地址 /home
+        this.$router.push('/home')
+      })
+    }
+  }
+}
 </script>
 
 <style lang="less" scoped>
@@ -70,17 +139,16 @@ export default {}
   }
 }
 
-.login_form{
-    position:absolute;
-    bottom: 0;
-    width: 100%;
-    padding:0 30px;
-    box-sizing: border-box;
-
+.login_form {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0 30px;
+  box-sizing: border-box;
 }
 
-.button_box{
-    display: flex;
-    justify-content: flex-end;
+.button_box {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
