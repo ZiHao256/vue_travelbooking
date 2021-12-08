@@ -3,27 +3,17 @@
     <!-- 面包屑导航区域 -->
     <el-breadcrumb separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/admin' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>地点管理</el-breadcrumb-item>
-      <el-breadcrumb-item>地点列表</el-breadcrumb-item>
+      <el-breadcrumb-item>旅馆管理</el-breadcrumb-item>
+      <el-breadcrumb-item>预定列表</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
-      <!-- 搜索与添加区域 -->
-      <el-row :gutter="20">
-        <el-col :span="7">
-          <el-input placeholder="请输入内容">
-            <el-button slot="append" icon="el-icon-search"></el-button>
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="addDialogVisible = true"
-            >添加地点</el-button
-          >
-        </el-col>
-      </el-row>
-      <el-table :data="locationList" border strip>
-        <el-table-column prop="pk" label="城市"> </el-table-column>
-        <el-table-column prop="fields.riskLevel" label="riskLevel">
+      <el-table :data="hotelList" border strip>
+        <el-table-column prop="pk" label="pk"> </el-table-column>
+        <el-table-column prop="fields.price" label="price"> </el-table-column>
+        <el-table-column prop="fields.numRooms" label="numRooms">
+        </el-table-column>
+        <el-table-column prop="fields.numAvail" label="numAvail">
         </el-table-column>
         <el-table-column prop="操作">
           <template slot-scope="scope">
@@ -38,7 +28,7 @@
                 type="primary"
                 size="mini"
                 icon="el-icon-edit"
-                @click="showEditLocation(scope.row.pk)"
+                @click="showEditHotel(scope.row.pk)"
               ></el-button>
             </el-tooltip>
 
@@ -53,7 +43,7 @@
                 type="danger"
                 size="mini"
                 icon="el-icon-delete"
-                @click="deleteLocation(scope.row.pk)"
+                @click="deleteHotel(scope.row.pk)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -61,7 +51,7 @@
       </el-table>
     </el-card>
     <!-- 添加用户对话框 -->
-    <el-dialog title="添加地点" :visible.sync="addDialogVisible" width="50%">
+    <el-dialog title="添加旅馆" :visible.sync="dialogVisible" width="50%">
       <!-- 内容主体区 -->
       <el-form
         ref="addFormRef"
@@ -72,40 +62,48 @@
         <el-form-item label="location" prop="location">
           <el-input v-model="addForm.location"></el-input>
         </el-form-item>
-        <el-form-item label="riskLevel" prop="riskLevel">
-          <el-input v-model="addForm.riskLevel"></el-input>
+        <el-form-item label="price" prop="price">
+          <el-input v-model.number="addForm.price"></el-input>
+        </el-form-item>
+        <el-form-item label="numRooms" prop="numRooms">
+          <el-input v-model.number="addForm.numRooms"></el-input>
+        </el-form-item>
+        <el-form-item label="numAvail" prop="numAvail">
+          <el-input v-model.number="addForm.numAvail"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区 -->
       <span slot="footer" class="dialog-footer">
-        <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addLocation">确 定</el-button>
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addHotel">确 定</el-button>
       </span>
     </el-dialog>
     <!-- 修改用户对话框 -->
-    <el-dialog
-      title="修改location"
-      :visible.sync="editDialogVisible"
-      width="50%"
-    >
+    <el-dialog title="修改旅馆" :visible.sync="editDialogVisible" width="50%">
       <!-- 内容主体区 -->
       <el-form
-        ref="editFormRef"
+        ref="addFormRef"
         :rules="addFormRules"
-        :model="editForm"
+        :model="addForm"
         label-width="80px"
       >
         <el-form-item label="location" prop="location">
           <el-input v-model="editForm.location" disabled></el-input>
         </el-form-item>
-        <el-form-item label="riskLevel" prop="riskLevel">
-          <el-input v-model="editForm.riskLevel"></el-input>
+        <el-form-item label="price" prop="price">
+          <el-input v-model.number="editForm.price"></el-input>
+        </el-form-item>
+        <el-form-item label="numRooms" prop="numRooms">
+          <el-input v-model.number="editForm.numRooms"></el-input>
+        </el-form-item>
+        <el-form-item label="numAvail" prop="numAvail">
+          <el-input v-model.number="editForm.numAvail"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区 -->
       <span slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible=false ">取 消</el-button>
-        <el-button type="primary" @click="editLocation">确 定</el-button>
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editHotel">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -121,103 +119,118 @@ export default {
         pagesize: 10
       },
       total: 0,
-      locationList: [],
-      addDialogVisible: false,
-      editDialogVisible: false,
+      hotelList: [],
+      dialogVisible: false,
       // 添加location的表单数据
       addForm: {
         location: '',
-        riskLevel: ''
+        price: '',
+        numRooms: '',
+        numAvail: ''
       },
       addFormRules: {
         location: [{ required: true, message: '输入', trigger: 'blur' }],
-        riskLevel: [{ required: true, message: '输入', trigger: 'blur' }]
+        price: [{ required: true, message: '输入', trigger: 'blur' }]
       },
+      editDialogVisible: false,
       editForm: {
         location: '',
-        riskLevel: ''
-      },
-      editFormRules: {
-        location: [{ required: true, message: '输入', trigger: 'blur' }],
-        riskLevel: [{ required: true, message: '输入', trigger: 'blur' }]
+        price: '',
+        numRooms: '',
+        numAvail: ''
       }
     }
   },
   // 生命周期函数
   created() {
-    this.getLocationList()
+    this.getHotelList()
   },
   methods: {
-    async getLocationList() {
-      const { data: result } = await this.$http.get('show_location', {
+    async getHotelList() {
+      const { data: result } = await this.$http.get('show_res_hotel', {
         params: this.queryInfo
       })
-      console.log(result)
       if (result.error_num !== 0) return this.$message.error(result.msg)
       this.total = result.total
-      this.locationList = result.list
-      console.log(result.list.pk)
+      this.hotelList = result.list
+      //   console.log(result.list.pk)
     },
     // 添加新location，先预校验
-    addLocation() {
+    addHotel() {
       this.$refs.addFormRef.validate(async (valid) => {
         // console.log(valid)
         if (!valid) return this.$message.error('error')
         // 预校验成功,发起添加用户的网络请求
         const postData = this.$qs.stringify({
           location: this.addForm.location,
-          riskLevel: this.addForm.riskLevel
+          price: this.addForm.price,
+          numRooms: this.addForm.numRooms,
+          numAvail: this.addForm.numAvail
         })
-        const { data: result } = await this.$http.post(
-          'add_location',
-          postData
-        )
+        const { data: result } = await this.$http.post('add_hotel', postData)
         if (result.error_num !== 0) return this.$message.error(result.msg)
         this.$message.success(result.msg)
         // 隐藏添加用户的对话框
-        this.addDialogVisible = false
+        this.dialogVisible = false
         // 刷新列表
-        this.getLocationList()
+        this.getHotelList()
       })
     },
-    async showEditLocation(location) {
+    async showEditHotel(location) {
       const { data: result } = await this.$http.get(
-        'show_location' + '?location=' + location
+        'show_hotel' + '?location=' + location
       )
       console.log(result)
       if (result.error_num !== -1) return this.$message.error(result.msg)
-      this.editForm = result.list
+      this.editForm = {
+        location: result.list.location_id,
+        price: result.list.price,
+        numRooms: result.list.numRooms,
+        numAvail: result.list.numAvail
+      }
+
       this.editDialogVisible = true
     },
     // 修改Location，预校验
-    async editLocation() {
+    async editHotel() {
       const postData = this.$qs.stringify({
         location: this.editForm.location,
-        riskLevel: this.editForm.riskLevel
+        price: this.editForm.price,
+        numRooms: this.editForm.numRooms,
+        numAvail: this.editForm.numAvail
       })
       console.log(postData)
-      const { data: result } = await this.$http.post('change_location', postData)
+      const { data: result } = await this.$http.post(
+        'change_hotel',
+        postData
+      )
       if (result.error_num !== 0) return this.$message.error(result.msg)
       this.$message.success(result.msg)
       this.editDialogVisible = false
-      this.getLocationList()
+      this.getHotelList()
     },
     // 删除指定location
-    async deleteLocation(location) {
+    async deleteHotel(location) {
       // 弹窗询问是否删除
-      const confirmResult = await this.$confirm('此操作将永久删除用户，是否继续', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).catch(err => err)
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除用户，是否继续',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch((err) => err)
 
       if (confirmResult !== 'confirm') {
         return this.$message.info('已取消删除')
       }
 
-      const { data: result } = await this.$http.get('delete_location' + '?location=' + location)
+      const { data: result } = await this.$http.get(
+        'delete_hotel' + '?location=' + location
+      )
       console.log(result)
-      this.getLocationList()
+      this.getHotelList()
     }
   }
 }

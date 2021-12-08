@@ -11,6 +11,14 @@ import customer from '../components/admin/customer.vue'
 import hotel from '../components/admin/hotel.vue'
 import bus from '../components/admin/bus.vue'
 
+import xCustomer from '../components/Customer.vue'
+import flightList from '../components/customer/flightList.vue'
+import hotelList from '../components/customer/hotelList.vue'
+import locationList from '../components/customer/locationList.vue'
+import busList from '../components/customer/busList.vue'
+import linesList from '../components/customer/linesList.vue'
+import revFlight from '../components/customer/revFlight.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -30,9 +38,9 @@ const routes = [
   {
     path: '/admin',
     component: Admin,
-    redirect: '/welcome',
+    redirect: '/admin/welcome',
     children: [{
-      path: '/welcome',
+      path: '/admin/welcome',
       component: Welcome
     }, {
       path: '/admin/location',
@@ -49,8 +57,34 @@ const routes = [
     }, {
       path: '/admin/hotel',
       component: hotel
-    }
-    ]
+    }]
+  },
+  {
+    path: '/customer',
+    redirect: '/customer/welcome',
+    component: xCustomer,
+    children: [{
+      path: '/customer/welcome',
+      component: Welcome
+    }, {
+      path: '/customer/flightList',
+      component: flightList
+    }, {
+      path: '/customer/busList',
+      component: busList
+    }, {
+      path: '/customer/locationList',
+      component: locationList
+    }, {
+      path: '/customer/hotelList',
+      component: hotelList
+    }, {
+      path: '/customer/linesList',
+      component: linesList
+    }, {
+      path: '/customer/revFlight',
+      component: revFlight
+    }]
   }
 
 ]

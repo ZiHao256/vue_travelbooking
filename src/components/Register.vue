@@ -13,10 +13,10 @@
         class="register_form"
       >
         <!-- 用户名 -->
-        <el-form-item prop="adminID" label="ID">
+        <el-form-item prop="ID" label="ID">
           <el-input
             prefix-icon="el-icon-user"
-            v-model.number="registerForm.adminID"
+            v-model="registerForm.ID"
           ></el-input>
         </el-form-item>
         <!--密码-->
@@ -49,8 +49,13 @@
         <!--按钮区域-->
         <div class="button_style">
           <el-form-item class="btns">
+            <el-switch
+              v-model="isAdmin"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+            >isAdmin
+            </el-switch>
             <el-button type="primary" @click="register">注册</el-button>
-
             <el-button type="info" @click="back">返回 </el-button>
           </el-form-item>
         </div>
@@ -63,17 +68,17 @@
 export default {
   data() {
     return {
+      isAdmin: false,
       registerForm: {
-        adminID: null,
+        ID: null,
         password1: null,
         password2: null,
         name: null
       },
       registerFormRules: {
-        adminID: [
+        ID: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
           {
-            type: 'number',
             message: '请输入数字值',
             trigger: 'blur'
           }
@@ -119,25 +124,41 @@ export default {
         if (this.registerForm.password1 !== this.registerForm.password2) {
           return this.$message.error('密码不一致')
         }
-        var adminID = this.registerForm.adminID
-        var password1 = this.registerForm.password1
-        var password2 = this.registerForm.password2
-        var name = this.registerForm.name
-        const postData = this.$qs.stringify({
-          adminID: adminID,
-          password1: password1,
-          password2: password2,
-          name: name
-        })
-        const { data: result } = await this.$http.post(
-          'admin_register',
-          postData
-        )
-        if (result.error_num !== 3) {
-          return this.$message.error(result.msg)
+        if (this.isAdmin) {
+          const postData = this.$qs.stringify({
+            adminID: this.registerForm.ID,
+            password1: this.registerForm.password1,
+            password2: this.registerForm.password2,
+            adminName: this.registerForm.name
+          })
+          console.log(postData)
+          const { data: result } = await this.$http.post(
+            'admin_register',
+            postData
+          )
+          if (result.error_num !== 3) {
+            return this.$message.error(result.msg)
+          }
+          this.$message.success(result.msg)
+          this.$router.push('/login')
+        } else {
+          const postData = this.$qs.stringify({
+            custID: this.registerForm.ID,
+            password1: this.registerForm.password1,
+            password2: this.registerForm.password2,
+            custName: this.registerForm.name
+          })
+          console.log(postData)
+          const { data: result } = await this.$http.post(
+            'cust_register',
+            postData
+          )
+          if (result.error_num !== 3) {
+            return this.$message.error(result.msg)
+          }
+          this.$message.success(result.msg)
+          this.$router.push('/login')
         }
-        this.$message.success(result.msg)
-        this.$router.push('/login')
       })
     },
     back() {

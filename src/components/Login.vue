@@ -7,32 +7,43 @@
       </div>
       <!-- 登录表单区域 -->
       <el-form
-        ref="adminLoginFormRef"
+        ref="LoginFormRef"
         label-width="0px"
-        :model="adminLoginForm"
-        :rules="adminLoginFormRules"
+        :model="LoginForm"
+        :rules="LoginFormRules"
         class="login_form"
       >
         <!-- 用户名 -->
-        <el-form-item prop="adminID">
+        <el-form-item prop="ID">
           <el-input
             prefix-icon="el-icon-user"
-            v-model.number="adminLoginForm.adminID"
+            v-model.number="LoginForm.ID"
           ></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item prop="password">
           <el-input
             prefix-icon="el-icon-lock"
-            v-model="adminLoginForm.password"
+            v-model="LoginForm.password"
             type="password"
           ></el-input>
         </el-form-item>
         <!-- 按钮区 -->
         <el-form-item class="button_box">
-          <el-button type="primary" @click="register">注册</el-button>
-          <el-button type="primary" @click="login">登录</el-button>
-          <el-button type="info" @click="resetLoginForm">重置</el-button>
+          <span>isadmin</span>
+          <el-switch
+            v-model="isAdmin"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          >
+          </el-switch>
+          <el-button size="mini" type="primary" @click="register"
+            >注册</el-button
+          >
+          <el-button size="mini" type="primary" @click="login">登录</el-button>
+          <el-button size="mini" type="info" @click="resetLoginForm"
+            >重置</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
@@ -41,18 +52,26 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       // admin登录表单
-      adminLoginForm: {
-        adminID: null,
+      LoginForm: {
+        ID: null,
         password: null
       },
+      // 是否为管理员
+      isAdmin: false,
       // 表单验证
-      adminLoginFormRules: {
-        adminID: [
+      LoginFormRules: {
+        ID: [
           { required: true, message: '请输入登录ID', trigger: 'blur' },
-          { min: 100, max: 99999999, type: 'number', message: '长度在 3 到 8 的数字', trigger: 'blur' }
+          {
+            min: 100,
+            max: 99999999,
+            type: 'number',
+            message: '长度在 3 到 8 的数字',
+            trigger: 'blur'
+          }
         ],
         password: [
           { required: true, message: '请输入password', trigger: 'blur' },
@@ -63,36 +82,62 @@ export default {
   },
   methods: {
     // 重置login表单
-    resetLoginForm () {
-      this.$refs.adminLoginFormRef.resetFields()
+    resetLoginForm() {
+      this.$refs.LoginFormRef.resetFields()
     },
     // 表单预验证
-    login () {
+    login() {
       // 回调函数，登陆时预验证
-      this.$refs.adminLoginFormRef.validate(async (valid) => {
+      this.$refs.LoginFormRef.validate(async (valid) => {
         // console.log(valid)
 
         if (!valid) return
 
-        var adminID = this.adminLoginForm.adminID
-        var password = this.adminLoginForm.password
-        const postData = this.$qs.stringify({
-          adminID: adminID,
-          password: password
-        })
+        if (this.isAdmin === false) {
+          // customer 登录
+          const postData = this.$qs.stringify({
+            custID: this.LoginForm.ID,
+            password: this.LoginForm.password
+          })
 
-        const { data: result } = await this.$http.post('admin_login', postData)
-        console.log(result)
+          const { data: result } = await this.$http.post(
+            'cust_login',
+            postData
+          )
+          console.log(result)
 
-        if (result.error_num !== 0) return this.$message.error(result.msg)
-        else this.$message.success(result.msg)
+          if (result.error_num !== 0) return this.$message.error(result.msg)
+          else this.$message.success('乘客登陆成功！')
 
-        // 登陆成功之后
-        // 1. 保存session
-        // window.sessionStorage.setItem("token", result.data.token)
+          // 登陆成功之后
+          // 1. 保存session
+          // window.sessionStorage.setItem("token", result.data.token)
 
-        // 2.编程式导航到后台主页，路由地址 /home
-        this.$router.push('/admin')
+          // 2.编程式导航到后台主页，路由地址 /home
+          this.$router.push('/customer')
+        } else {
+          // admin 登录
+          const postData = this.$qs.stringify({
+            adminID: this.LoginForm.ID,
+            password: this.LoginForm.password
+          })
+
+          const { data: result } = await this.$http.post(
+            'admin_login',
+            postData
+          )
+          console.log(result)
+
+          if (result.error_num !== 0) return this.$message.error(result.msg)
+          else this.$message.success('管理员登陆成功！')
+
+          // 登陆成功之后
+          // 1. 保存session
+          // window.sessionStorage.setItem("token", result.data.token)
+
+          // 2.编程式导航到后台主页，路由地址 /home
+          this.$router.push('/admin')
+        }
       })
     },
     register() {

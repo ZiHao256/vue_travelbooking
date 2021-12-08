@@ -8,19 +8,6 @@
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
-      <!-- 搜索与添加区域 -->
-      <el-row :gutter="20">
-        <el-col :span="7">
-          <el-input placeholder="请输入内容">
-            <el-button slot="append" icon="el-icon-search"></el-button>
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="addDialogVisible = true"
-            >添加地点</el-button
-          >
-        </el-col>
-      </el-row>
       <el-table :data="locationList" border strip>
         <el-table-column prop="pk" label="城市"> </el-table-column>
         <el-table-column prop="fields.riskLevel" label="riskLevel">
@@ -31,7 +18,7 @@
             <el-tooltip
               class="item"
               effect="dark"
-              content="修改"
+              content="预定Hotel"
               placement="top"
             >
               <el-button
@@ -46,13 +33,13 @@
             <el-tooltip
               class="item"
               effect="dark"
-              content="删除"
+              content="预定Bus"
               placement="top"
             >
               <el-button
-                type="danger"
+                type="primary"
                 size="mini"
-                icon="el-icon-delete"
+                icon="el-icon-edit"
                 @click="deleteLocation(scope.row.pk)"
               ></el-button>
             </el-tooltip>

@@ -29,7 +29,7 @@
         <el-table-column prop="fields.numAvail" label="numAvail">
         </el-table-column>
         <el-table-column prop="操作" label="操作">
-          <template slot-scope="">
+          <template slot-scope="scope">
             <!-- 修改按钮 -->
             <el-tooltip
               class="item"
@@ -41,6 +41,7 @@
                 type="primary"
                 size="mini"
                 icon="el-icon-edit"
+                @click="showEditBus(scope.row.pk)"
               ></el-button>
             </el-tooltip>
 
@@ -55,6 +56,7 @@
                 type="danger"
                 size="mini"
                 icon="el-icon-delete"
+                @click="deleteBus(scope.row.pk)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -89,6 +91,34 @@
         <el-button type="primary" @click="addBus">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 添加用户对话框 -->
+    <el-dialog title="添加大巴" :visible.sync="editDialogVisible" width="50%">
+      <!-- 内容主体区 -->
+      <el-form
+        ref="editFormRef"
+        :rules="addFormRules"
+        :model="editForm"
+        label-width="80px"
+      >
+        <el-form-item label="location" prop="location">
+          <el-input v-model="editForm.location" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="price" prop="price">
+          <el-input v-model.number="editForm.price"></el-input>
+        </el-form-item>
+        <el-form-item label="numSeats" prop="numSeats">
+          <el-input v-model.number="editForm.numSeats"></el-input>
+        </el-form-item>
+        <el-form-item label="numAvail" prop="numAvail">
+          <el-input v-model.number="editForm.numAvail"></el-input>
+        </el-form-item>
+      </el-form>
+      <!-- 底部区 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editBus">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -114,6 +144,13 @@ export default {
       addFormRules: {
         location: [{ required: true, message: '输入', trigger: 'blur' }],
         price: [{ required: true, message: '输入', trigger: 'blur' }]
+      },
+      editDialogVisible: false,
+      editForm: {
+        location: '',
+        price: '',
+        numSeats: '',
+        numAvail: ''
       }
     }
   },
@@ -153,6 +190,61 @@ export default {
         // 刷新列表
         this.getBusList()
       })
+    },
+    async showEditBus(location) {
+      const { data: result } = await this.$http.get(
+        'show_bus' + '?location=' + location
+      )
+      console.log(result)
+      if (result.error_num !== -1) return this.$message.error(result.msg)
+      this.editForm = {
+        location: result.list.location_id,
+        price: result.list.price,
+        numSeats: result.list.numSeats,
+        numAvail: result.list.numAvail
+      }
+      this.editDialogVisible = true
+    },
+    // 修改Location，预校验
+    async editBus() {
+      const postData = this.$qs.stringify({
+        location: this.editForm.location,
+        price: this.editForm.price,
+        numSeats: this.editForm.numSeats,
+        numAvail: this.editForm.numAvail
+      })
+      console.log(postData)
+      const { data: result } = await this.$http.post(
+        'change_bus',
+        postData
+      )
+      if (result.error_num !== 0) return this.$message.error(result.msg)
+      this.$message.success(result.msg)
+      this.editDialogVisible = false
+      this.getBusList()
+    },
+    // 删除指定location
+    async deleteBus(location) {
+      // 弹窗询问是否删除
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除用户，是否继续',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch((err) => err)
+
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('已取消删除')
+      }
+
+      const { data: result } = await this.$http.get(
+        'delete_bus' + '?location=' + location
+      )
+      console.log(result)
+      this.getBusList()
     }
   }
 }
