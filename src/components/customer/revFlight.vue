@@ -2,213 +2,220 @@
   <div>
     <!-- 面包屑导航区域 -->
     <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/admin' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/customer' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>航班管理</el-breadcrumb-item>
       <el-breadcrumb-item>预定列表</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
       <el-table :data="flightList" border strip>
-        <el-table-column prop="pk" label="order_id"> </el-table-column>
-        <el-table-column prop="fields.flightNum" label="flightNum"> </el-table-column>
-        <el-table-column prop="fields.FromCity" label="FromCity">
+        <el-table-column prop="pk" label="resvKey"></el-table-column>
+        <el-table-column prop="fields.flightNum" label="flightNum"></el-table-column>
+        <el-table-column prop="fields.resStatus" label="resStatus">
         </el-table-column>
-        <el-table-column prop="fields.ArivCity" label="ArivCity">
+        <el-table-column prop="fields.buildTime" label="buildTime">
         </el-table-column>
-        <el-table-column prop="fields.numSeats" label="numSeats">
+        <el-table-column prop="fields.startTime" label="startTime">
         </el-table-column>
-        <el-table-column prop="fields.numAvail" label="numAvail">
+        <el-table-column prop="fields.endTime" label="endTime">
         </el-table-column>
-        <el-table-column prop="fields.price" label="price"> </el-table-column>
-        <el-table-column prop="操作">
+        <el-table-column label="操作">
           <template slot-scope="scope">
-            <!-- 修改按钮 -->
+            <!-- 开始按钮 -->
             <el-tooltip
               class="item"
               effect="dark"
-              content="取消该航班"
+              content="开始"
+              placement="top"
+            >
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="startFlight(scope.row)"
+              ></el-button>
+            </el-tooltip>
+            <!-- 完成按钮 -->
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="完成"
+              placement="top"
+            >
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="endFlight(scope.row)"
+              ></el-button>
+            </el-tooltip>
+            <!-- 取消按钮 -->
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="取消"
+              placement="top"
+            >
+              <el-button
+                type="warning"
+                size="mini"
+                icon="el-icon-delete"
+                @click="cancelFlight(scope.row)"
+              ></el-button>
+            </el-tooltip>
+            <!-- 查看路线按钮 -->
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="查看旅游路线"
               placement="top"
             >
               <el-button
                 type="primary"
                 size="mini"
                 icon="el-icon-delete"
-                @click="showEditFlight(scope.row.pk)"
+                @click="showLines(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
-    <!-- 修改用户对话框 -->
-    <el-dialog title="修改flight" :visible.sync="editDialogVisible" width="50%">
-      <!-- 内容主体区 -->
-      <el-form
-        ref="editFormRef"
-        :rules="addFormRules"
-        :model="editForm"
-        label-width="80px"
-      >
-        <el-form-item label="flightNum" prop="pk">
-          <el-input v-model="editForm.flightNum" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="price" prop="price">
-          <el-input v-model.number="editForm.price"></el-input>
-        </el-form-item>
-        <el-form-item label="numSeats" prop="numSeats">
-          <el-input v-model.number="editForm.numSeats"></el-input>
-        </el-form-item>
-        <el-form-item label="numAvail" prop="numAvail">
-          <el-input v-model.number="editForm.numAvail"></el-input>
-        </el-form-item>
-        <el-form-item label="FromCity" prop="FromCity">
-          <el-input v-model="editForm.FromCity"></el-input>
-        </el-form-item>
-        <el-form-item label="ArivCity" prop="ArivCity">
-          <el-input v-model="editForm.ArivCity"></el-input>
-        </el-form-item>
-      </el-form>
+    <el-dialog title="查看以该航班开始的旅游路线" :visible.sync="showLinesDialog" width="50%">
+      <span>
+          <el-alert
+            v-if="is_complete"
+            title="旅游路线完整！"
+            type="success">
+          </el-alert>
+          <el-alert
+            v-if="!is_complete"
+              title="旅游路线不完整！"
+              type="warning">
+          </el-alert>
+      </span>
+      <el-carousel :interval="4000" type="card" height="200px">
+        <el-carousel-item v-for="item in this.line" :key="item">
+          <h3 class="medium">{{ item }}</h3>
+        </el-carousel-item>
+      </el-carousel>
       <!-- 底部区 -->
       <span slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editFlight">确 定</el-button>
+        <el-button @click="showLinesDialog = false">取 消</el-button>
+        <el-button type="primary" @click="showLinesDialog=false">确 定</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      // 获取location列表的参数对象
-      queryInfo: {
-        pagenum: 1,
-        pagesize: 10
-      },
-      total: 0,
-      flightList: [],
-      dialogVisible: false,
-      // 添加location的表单数据
-      addForm: {
-        flightNum: '',
-        price: '',
-        numSeats: '',
-        numAvail: '',
-        FromCity: '',
-        ArivCity: ''
-      },
-      addFormRules: {
-        flightNum: [{ required: true, message: '输入', trigger: 'blur' }],
-        price: [{ required: true, message: '输入', trigger: 'blur' }]
-      },
-      editDialogVisible: false,
-      editForm: {
-        flightNum: '',
-        price: '',
-        numSeats: '',
-        numAvail: '',
-        FromCity: '',
-        ArivCity: ''
+  export default {
+    data() {
+      return {
+        // 获取location列表的参数对象
+        queryInfo: {
+          pagenum: 1,
+          pagesize: 10
+        },
+        total: 0,
+        flightList: [],
+        //  展示路线的数据
+        showLinesDialog: false,
+        showLinesInfo: {
+          pagenum: 1,
+          pagesize: 10,
+          resvKey: ''
+        },
+        is_complete: '',
+        line: []
+
       }
-    }
-  },
-  // 生命周期函数
-  created() {
-    this.getFlightList()
-  },
-  methods: {
-    async getFlightList() {
-      const { data: result } = await this.$http.get('show_res_flight', {
-        params: this.queryInfo
-      })
-      console.log(result)
-      if (result.error_num !== 0) return this.$message.error(result.msg)
-      this.total = result.total
-      this.flightList = result.list
     },
-    // 添加新location，先预校验
-    addFlight() {
-      this.$refs.addFormRef.validate(async (valid) => {
-        // console.log(valid)
-        if (!valid) return this.$message.error('error')
-        // 预校验成功,发起添加用户的网络请求
-        const postData = this.$qs.stringify({
-          flightNum: this.addForm.flightNum,
-          price: this.addForm.price,
-          numSeats: this.addForm.numSeats,
-          numAvail: this.addForm.numAvail,
-          FromCity: this.addForm.FromCity,
-          ArivCity: this.addForm.ArivCity
+    // 生命周期函数
+    created() {
+      this.getFlightList()
+    },
+    methods: {
+      async getFlightList() {
+        const {data: result} = await this.$http.get('show_res_flight', {
+          params: this.queryInfo
         })
-        const { data: result } = await this.$http.post('add_flight', postData)
+        console.log(result)
         if (result.error_num !== 0) return this.$message.error(result.msg)
-        this.$message.success(result.msg)
-        // 隐藏添加用户的对话框
-        this.dialogVisible = false
-        // 刷新列表
+        this.total = result.total
+        this.flightList = result.list
+      },
+      // 开始航班订单
+      async startFlight(list) {
+        const postData = this.$qs.stringify({
+          resvKey: list.pk,
+          flightNum: list.fields.flightNum
+        })
+        const {data: result} = await this.$http.post(
+          'start_res_flight', postData
+        )
+        console.log(result)
+        if (result.error_num !== 0) return this.$message.error(result.msg)
         this.getFlightList()
-      })
-    },
-    async showEditFlight(flightNum) {
-      const { data: result } = await this.$http.get(
-        'show_flight' + '?flightNum=' + flightNum
-      )
-      console.log(result)
-      if (result.error_num !== -1) return this.$message.error(result.msg)
-      this.editForm = {
-        flightNum: result.list.flightNum,
-        price: result.list.price,
-        numSeats: result.list.numSeats,
-        numAvail: result.list.numAvail,
-        FromCity: result.list.FromCity_id,
-        ArivCity: result.list.ArivCity_id
+        this.$message.success(result.msg)
+      },
+      // 结束航班订单
+      async endFlight(list) {
+        const postData = this.$qs.stringify({
+          resvKey: list.pk,
+          flightNum: list.fields.flightNum
+        })
+        const {data: result} = await this.$http.post(
+          'end_res_flight', postData
+        )
+        console.log(result)
+        if (result.error_num !== 0) return this.$message.error(result.msg)
+        this.getFlightList()
+        this.$message.success(result.msg)
+      },
+      // 取消航班
+      async cancelFlight(list) {
+        const postData = this.$qs.stringify({
+          resvKey: list.pk,
+          flightNum: list.fields.flightNum
+        })
+        const {data: result} = await this.$http.post(
+          'end_res_flight', postData
+        )
+        console.log(result)
+        if (result.error_num !== 0) return this.$message.error(result.msg)
+        this.getFlightList()
+        this.$message.success(result.msg)
+      },
+      async showLines(list) {
+        this.showLinesDialog = true
+        this.showLinesInfo.resvKey = list.pk
+        const {data: result} = await this.$http.get(
+          'show_lines', {
+            params: this.showLinesInfo
+          })
+        console.log(result)
+        this.is_complete = result.is_complete
+        this.line = result.line
       }
-      this.editDialogVisible = true
-    },
-    // 修改Location，预校验
-    async editFlight() {
-      const postData = this.$qs.stringify({
-        flightNum: this.editForm.flightNum,
-        price: this.editForm.price,
-        numSeats: this.editForm.numSeats,
-        numAvail: this.editForm.numAvail,
-        FromCity: this.editForm.FromCity,
-        ArivCity: this.editForm.ArivCity
-      })
-      console.log(postData)
-      const { data: result } = await this.$http.post('change_flight', postData)
-      if (result.error_num !== 0) return this.$message.error(result.msg)
-      this.$message.success(result.msg)
-      this.editDialogVisible = false
-      this.getFlightList()
-    },
-    // 删除指定location
-    async deleteFlight(flightNum) {
-      // 弹窗询问是否删除
-      const confirmResult = await this.$confirm(
-        '此操作将永久删除航班，是否继续',
-        '提示',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      ).catch((err) => err)
-
-      if (confirmResult !== 'confirm') {
-        return this.$message.info('已取消删除')
-      }
-
-      const { data: result } = await this.$http.get(
-        'delete_flight' + '?flightNum=' + flightNum
-      )
-      console.log(result)
-      this.getFlightList()
     }
   }
-}
 </script>
 
 <style lang="less" scoped>
+  .el-carousel__item h3 {
+    color: #475669;
+    font-size: 14px;
+    opacity: 0.75;
+    line-height: 200px;
+    margin: 0;
+  }
+
+  .el-carousel__item:nth-child(2n) {
+    background-color: #99a9bf;
+  }
+
+  .el-carousel__item:nth-child(2n+1) {
+    background-color: #d3dce6;
+  }
 </style>

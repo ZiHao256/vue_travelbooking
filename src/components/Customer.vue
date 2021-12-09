@@ -41,7 +41,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>航班</span>
+              <span>航班管理</span>
             </template>
 
             <!--二级菜单-->
@@ -64,7 +64,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>旅店</span>
+              <span>旅店管理</span>
             </template>
 
             <!--二级菜单-->
@@ -80,7 +80,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>大巴</span>
+              <span>大巴管理</span>
             </template>
 
             <!--二级菜单-->
@@ -96,7 +96,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>路线</span>
+              <span>路线管理</span>
             </template>
 
             <!--二级菜单-->

@@ -3,7 +3,7 @@
     <!-- 头部区域 -->
     <el-header>
       <div>
-        <img src="../assets/logo.png" alt="" />
+        <img src="../assets/logo.png" alt=""/>
         <span>欢迎你, 管理员</span>
       </div>
       <el-button type="info" @click="logout">退出</el-button>
@@ -21,11 +21,28 @@
         >
           <!-- 管理乘客 -->
           <!--一级菜单-->
+          <el-submenu index="0">
+            <!--一级菜单的模板， i是图标，span是文本-->
+            <template slot="title">
+              <i class="el-icon-location"></i>
+              <span>管理员管理</span>
+            </template>
+
+            <!--二级菜单-->
+            <el-menu-item index="/admin/admin">
+              <template slot="title">
+                <i class="el-icon-location"></i>
+                <span>管理员列表</span>
+              </template>
+            </el-menu-item>
+          </el-submenu>
+          <!-- 管理乘客 -->
+          <!--一级菜单-->
           <el-submenu index="1">
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>乘客</span>
+              <span>乘客管理</span>
             </template>
 
             <!--二级菜单-->
@@ -42,7 +59,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>地点</span>
+              <span>地点管理</span>
             </template>
 
             <!--二级菜单-->
@@ -58,7 +75,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>航班</span>
+              <span>航班管理</span>
             </template>
 
             <!--二级菜单-->
@@ -74,7 +91,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>旅店</span>
+              <span>旅店管理</span>
             </template>
 
             <!--二级菜单-->
@@ -90,7 +107,7 @@
             <!--一级菜单的模板， i是图标，span是文本-->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>大巴</span>
+              <span>大巴管理</span>
             </template>
 
             <!--二级菜单-->
@@ -103,7 +120,6 @@
           </el-submenu>
         </el-menu>
       </el-aside>
-
       <!-- 右侧主体 -->
       <el-main>
         <router-view></router-view>
@@ -113,48 +129,50 @@
 </template>
 
 <script>
-export default {
-  data() {
-    return {}
-  },
-  methods: {
-    async logout() {
-      // 清空token
-      // window.sessionStorage.clear()
-      // 跳转到登录页面
-      const { data: res } = await this.$http.get('logout')
-      console.log(res)
-      this.$router.push('/login')
+  export default {
+    data() {
+      return {}
+    },
+    methods: {
+      async logout() {
+        // 清空token
+        // window.sessionStorage.clear()
+        // 跳转到登录页面
+        const {data: res} = await this.$http.get('logout')
+        console.log(res)
+        this.$router.push('/login')
+      }
     }
   }
-}
 </script>
 
 <style lang="less" scoped>
-.el-header {
-  background-color: #f0e68c;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #cbe007;
-  > div {
+  .el-header {
+    background-color: #f0e68c;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    span {
-      margin-left: 15px;
+    color: #cbe007;
+
+    > div {
+      display: flex;
+      align-items: center;
+
+      span {
+        margin-left: 15px;
+      }
     }
   }
-}
 
-.el-aside {
-  background-color: #cac489;
-}
+  .el-aside {
+    background-color: #cac489;
+  }
 
-.el-main {
-  background-color: rgb(255, 255, 255);
-}
+  .el-main {
+    background-color: rgb(255, 255, 255);
+  }
 
-.home-container {
-  height: 100%;
-}
+  .home-container {
+    height: 100%;
+  }
 </style>

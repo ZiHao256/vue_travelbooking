@@ -2,12 +2,13 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
+import Welcome from '../components/Welcome.vue'
 
 import Admin from '../components/Admin.vue'
-import Welcome from '../components/Welcome.vue'
 import location from '../components/admin/location.vue'
 import flight from '../components/admin/flight.vue'
 import customer from '../components/admin/customer.vue'
+import admin from '../components/admin/admin.vue'
 import hotel from '../components/admin/hotel.vue'
 import bus from '../components/admin/bus.vue'
 
@@ -49,6 +50,9 @@ const routes = [
       path: '/admin/customer',
       component: customer
     }, {
+      path: '/admin/admin',
+      component: admin
+    },{
       path: '/admin/flight',
       component: flight
     }, {
