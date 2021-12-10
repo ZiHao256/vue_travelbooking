@@ -25,7 +25,7 @@
         <el-table-column prop="pk" label="城市"> </el-table-column>
         <el-table-column prop="fields.riskLevel" label="riskLevel">
         </el-table-column>
-        <el-table-column prop="操作">
+        <el-table-column fixed="right" label="操作">
           <template slot-scope="scope">
             <!-- 修改按钮 -->
             <el-tooltip
@@ -59,6 +59,15 @@
           </template>
         </el-table-column>
       </el-table>
+            <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-size="queryInfo.pagesize"
+        :page-sizes="[1, 2, 5, 10]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total">
+      </el-pagination>
     </el-card>
     <!-- 添加用户对话框 -->
     <el-dialog title="添加地点" :visible.sync="addDialogVisible" width="50%">
@@ -218,7 +227,18 @@ export default {
       const { data: result } = await this.$http.get('delete_location' + '?location=' + location)
       console.log(result)
       this.getLocationList()
-    }
+    },
+        //  分页
+      handleSizeChange(newSize){
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getLocationList()
+      },
+      handleCurrentChange(newPage){
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
+        this.getLocationList()
+      }
   }
 }
 </script>

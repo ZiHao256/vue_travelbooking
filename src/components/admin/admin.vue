@@ -25,7 +25,7 @@
         <el-table-column prop="pk" label="adminID"> </el-table-column>
         <el-table-column prop="fields.adminName" label="姓名"> </el-table-column>
         <el-table-column prop="fields.password" label="密码"> </el-table-column>
-        <el-table-column prop="操作">
+        <el-table-column fixed="right"  label="操作">
           <template slot-scope="scope">
             <!-- 修改按钮 -->
             <el-tooltip
@@ -59,6 +59,15 @@
           </template>
         </el-table-column>
       </el-table>
+            <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-size="queryInfo.pagesize"
+        :page-sizes="[1, 2, 5, 10]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total">
+      </el-pagination>
     </el-card>
     <!-- 添加用户对话框 -->
     <el-dialog title="添加管理员" :visible.sync="dialogVisible" width="50%">
@@ -137,7 +146,7 @@ export default {
         adminID: '',
         name: '',
         password1: '',
-        password2: '',
+        password2: ''
       },
       addFormRules: {
         adminID: [{ required: true, message: '输入', trigger: 'blur' }],
@@ -147,7 +156,7 @@ export default {
       editForm: {
         adminID: '',
         name: '',
-        password: '',
+        password: ''
       }
     }
   },
@@ -179,7 +188,7 @@ export default {
           adminID: this.addForm.adminID,
           adminName: this.addForm.name,
           password1: this.addForm.password1,
-          password2: this.addForm.password2,
+          password2: this.addForm.password2
         })
         const { data: result } = await this.$http.post(
           'admin_register',
@@ -202,7 +211,7 @@ export default {
       this.editForm = {
         adminID: result.list.adminID,
         name: result.list.adminName,
-        password: result.list.password,
+        password: result.list.password
       }
       this.editDialogVisible = true
     },
@@ -211,7 +220,7 @@ export default {
       const postData = this.$qs.stringify({
         adminID: this.editForm.adminID,
         adminName: this.editForm.name,
-        password: this.editForm.password,
+        password: this.editForm.password
       })
       console.log(postData)
       const { data: result } = await this.$http.post(
@@ -245,7 +254,19 @@ export default {
       )
       console.log(result)
       this.getAdminList()
-    }
+    },
+  //  分页
+        //  分页
+      handleSizeChange(newSize){
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getAdminList()
+      },
+      handleCurrentChange(newPage){
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
+        this.getAdminList()
+      }
   }
 }
 </script>

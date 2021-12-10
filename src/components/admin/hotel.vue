@@ -28,7 +28,7 @@
         </el-table-column>
         <el-table-column prop="fields.numAvail" label="numAvail">
         </el-table-column>
-        <el-table-column prop="操作">
+        <el-table-column fixed="right" label="操作">
           <template slot-scope="scope">
             <!-- 修改按钮 -->
             <el-tooltip
@@ -62,6 +62,15 @@
           </template>
         </el-table-column>
       </el-table>
+            <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-size="queryInfo.pagesize"
+        :page-sizes="[1, 2, 5, 10]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total">
+      </el-pagination>
     </el-card>
     <!-- 添加用户对话框 -->
     <el-dialog title="添加旅馆" :visible.sync="dialogVisible" width="50%">
@@ -246,7 +255,18 @@ export default {
       )
       console.log(result)
       this.getHotelList()
-    }
+    },
+        //  分页
+      handleSizeChange(newSize){
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getHotelList()
+      },
+      handleCurrentChange(newPage){
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
+        this.getHotelList()
+      }
   }
 }
 </script>

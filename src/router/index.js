@@ -52,7 +52,7 @@ const routes = [
     }, {
       path: '/admin/admin',
       component: admin
-    },{
+    }, {
       path: '/admin/flight',
       component: flight
     }, {

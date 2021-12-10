@@ -8,11 +8,11 @@
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
-      <el-table :data="locationList" border strip>
-        <el-table-column prop="pk" label="城市"></el-table-column>
-        <el-table-column prop="fields.riskLevel" label="riskLevel">
+      <el-table :data="locationList" border strip :default-sort="{prop: 'pk', order: 'descending'}">
+        <el-table-column sortable prop="pk" label="城市"></el-table-column>
+        <el-table-column sortable prop="fields.riskLevel" label="riskLevel">
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column fixed="right" label="操作">
           <template slot-scope="scope">
             <!-- 预定Hotel按钮 -->
             <el-tooltip
@@ -46,6 +46,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <!--      分页-->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-size="queryInfo.pagesize"
+        :page-sizes="[1, 2, 5, 10]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total">
+      </el-pagination>
     </el-card>
     <!-- 修改用户对话框 -->
     <el-dialog
@@ -125,7 +135,7 @@
         },
         total: 0,
         locationList: [],
-        //预定Hotel的数据
+        // 预定Hotel的数据
         resHotelDialogVisible: false,
         resHotelForm: {
           location: '',
@@ -142,7 +152,7 @@
           price: '',
           numSeats: '',
           numAvail: ''
-        },
+        }
 
       }
     },
@@ -217,6 +227,17 @@
         if (result.error_num !== 0) return this.$message.error(result.msg)
         this.$message.success(result.msg)
         this.resBusDialogVisible = false
+        this.getLocationList()
+      },
+      //  分页
+      handleSizeChange(newSize) {
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getLocationList()
+      },
+      handleCurrentChange(newPage) {
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
         this.getLocationList()
       }
     }

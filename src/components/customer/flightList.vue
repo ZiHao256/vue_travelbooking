@@ -8,18 +8,18 @@
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
-      <el-table :data="flightList" border strip>
-        <el-table-column prop="pk" label="flightNum"> </el-table-column>
-        <el-table-column prop="fields.FromCity" label="FromCity">
+      <el-table :data="flightList" border strip :default-sort="{prop:'pk', order:'descending'}">
+        <el-table-column sortable min-width="130" prop="pk" label="flightNum"></el-table-column>
+        <el-table-column sortable min-width="130" prop="fields.FromCity" label="FromCity">
         </el-table-column>
-        <el-table-column prop="fields.ArivCity" label="ArivCity">
+        <el-table-column sortable min-width="130" prop="fields.ArivCity" label="ArivCity">
         </el-table-column>
-        <el-table-column prop="fields.numSeats" label="numSeats">
+        <el-table-column sortable min-width="130" prop="fields.numSeats" label="numSeats">
         </el-table-column>
-        <el-table-column prop="fields.numAvail" label="numAvail">
+        <el-table-column sortable min-width="130" prop="fields.numAvail" label="numAvail">
         </el-table-column>
-        <el-table-column prop="fields.price" label="price"> </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column sortable min-width="130" prop="fields.price" label="price"></el-table-column>
+        <el-table-column min-width="220" label="操作">
           <template slot-scope="scope">
             <!-- 修改按钮 -->
             <el-tooltip
@@ -38,6 +38,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-size="queryInfo.pagesize"
+        :page-sizes="[1, 2, 5, 10]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total">
+      </el-pagination>
     </el-card>
     <!-- 修改用户对话框 -->
     <el-dialog title="预定flight" :visible.sync="resFlightDialogVisible" width="50%">
@@ -77,98 +86,110 @@
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      // 获取location列表的参数对象
-      queryInfo: {
-        pagenum: 1,
-        pagesize: 10
-      },
-      total: 0,
-      flightList: [],
-      resFlightDialogVisible: false,
-      resFlightForm:{
-        flightNum:'',
-        price: '',
-        numSeats:'',
-        numAvail:'',
-        FromCity:'',
-        ArivCity:''
-      },
-      resFlightFormRules:[]
-    }
-  },
-  // 生命周期函数
-  created() {
-    this.getFlightList()
-  },
-  methods: {
-    async getFlightList() {
-      const { data: result } = await this.$http.get('show_flight', {
-        params: this.queryInfo
-      })
-      console.log(result)
-      if (result.error_num !== 0) return this.$message.error(result.msg)
-      this.total = result.total
-      this.flightList = result.list
-      console.log(result.list.pk)
+  export default {
+    data() {
+      return {
+        // 获取location列表的参数对象
+        queryInfo: {
+          pagenum: 1,
+          pagesize: 10
+        },
+        total: 0,
+        flightList: [],
+        resFlightDialogVisible: false,
+        resFlightForm: {
+          flightNum: '',
+          price: '',
+          numSeats: '',
+          numAvail: '',
+          FromCity: '',
+          ArivCity: ''
+        },
+        resFlightFormRules: []
+      }
     },
-    // 添加新location，先预校验
-    addFlight() {
-      this.$refs.addFormRef.validate(async (valid) => {
-        // console.log(valid)
-        if (!valid) return this.$message.error('error')
-        // 预校验成功,发起添加用户的网络请求
-        const postData = this.$qs.stringify({
-          flightNum: this.addForm.flightNum,
-          price: this.addForm.price,
-          numSeats: this.addForm.numSeats,
-          numAvail: this.addForm.numAvail,
-          FromCity: this.addForm.FromCity,
-          ArivCity: this.addForm.ArivCity
+    // 生命周期函数
+    created() {
+      this.getFlightList()
+    },
+    methods: {
+      async getFlightList() {
+        const {data: result} = await this.$http.get('show_flight', {
+          params: this.queryInfo
         })
-        const { data: result } = await this.$http.post('add_flight', postData)
+        console.log(result)
+        if (result.error_num !== 0) return this.$message.error(result.msg)
+        this.total = result.total
+        this.flightList = result.list
+        console.log(result.list.pk)
+      },
+      // 添加新location，先预校验
+      addFlight() {
+        this.$refs.addFormRef.validate(async (valid) => {
+          // console.log(valid)
+          if (!valid) return this.$message.error('error')
+          // 预校验成功,发起添加用户的网络请求
+          const postData = this.$qs.stringify({
+            flightNum: this.addForm.flightNum,
+            price: this.addForm.price,
+            numSeats: this.addForm.numSeats,
+            numAvail: this.addForm.numAvail,
+            FromCity: this.addForm.FromCity,
+            ArivCity: this.addForm.ArivCity
+          })
+          const {data: result} = await this.$http.post('add_flight', postData)
+          if (result.error_num !== 0) return this.$message.error(result.msg)
+          this.$message.success(result.msg)
+          // 隐藏添加用户的对话框
+          this.dialogVisible = false
+          // 刷新列表
+          this.getFlightList()
+        })
+      },
+      async showResFlight(flightNum) {
+        const {data: result} = await this.$http.get(
+          'show_flight' + '?flightNum=' + flightNum
+        )
+        console.log(result)
+        if (result.error_num !== -1) return this.$message.error(result.msg)
+        this.resFlightForm = {
+          flightNum: result.list.flightNum,
+          price: result.list.price,
+          numSeats: result.list.numSeats,
+          numAvail: result.list.numAvail,
+          FromCity: result.list.FromCity_id,
+          ArivCity: result.list.ArivCity_id
+        }
+        this.resFlightDialogVisible = true
+      },
+      // 预定航班
+      async resFlight() {
+        const postData = this.$qs.stringify({
+          flightNum: this.resFlightForm.flightNum,
+          resvKey: 0
+        })
+        const {data: result} = await this.$http.post(
+          'reserve_flight', postData
+        )
         if (result.error_num !== 0) return this.$message.error(result.msg)
         this.$message.success(result.msg)
-        // 隐藏添加用户的对话框
-        this.dialogVisible = false
-        // 刷新列表
+        this.resFlightDialogVisible = false
         this.getFlightList()
-      })
-    },
-    async showResFlight(flightNum){
-      const {data:result} = await this.$http.get(
-        'show_flight'+'?flightNum='+flightNum
-      )
-      console.log(result)
-      if (result.error_num !== -1) return this.$message.error(result.msg)
-      this.resFlightForm = {
-        flightNum:result.list.flightNum,
-        price: result.list.price,
-        numSeats: result.list.numSeats,
-        numAvail: result.list.numAvail,
-        FromCity: result.list.FromCity_id,
-        ArivCity: result.list.ArivCity_id
+      },
+    //  分页
+      handleSizeChange(newSize){
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getFlightList()
+      },
+      handleCurrentChange(newPage){
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
+        this.getFlightList()
       }
-      this.resFlightDialogVisible = true
-    },
-    // 预定航班
-    async resFlight(){
-      const postData = this.$qs.stringify({
-        flightNum: this.resFlightForm.flightNum,
-        resvKey: 0
-      })
-      const {data:result} = await this.$http.post(
-        'reserve_flight',postData
-      )
-      if(result.error_num !== 0) return this.$message.error(result.msg)
-      this.$message.success(result.msg)
-      this.resFlightDialogVisible = false
-      this.getFlightList()
+
     }
   }
-}
 </script>
 
 <style lang="less" scoped>

@@ -8,18 +8,18 @@
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
-      <el-table :data="hotelList" border strip>
-        <el-table-column prop="pk" label="resvKey"></el-table-column>
-        <el-table-column prop="fields.hotelLocation" label="hotelLocation"></el-table-column>
-        <el-table-column prop="fields.resStatus" label="resStatus">
+      <el-table :data="hotelList" border strip :default-sort="{prop:'pk', order:'descending'}">
+        <el-table-column sortable min-width="130" prop="pk" label="resvKey"></el-table-column>
+        <el-table-column sortable min-width="130" prop="fields.hotelLocation" label="hotelLocation"></el-table-column>
+        <el-table-column sortable min-width="100" prop="fields.resStatus" label="resStatus">
         </el-table-column>
-        <el-table-column prop="fields.buildTime" label="buildTime">
+        <el-table-column sortable min-width="220" prop="fields.buildTime" label="buildTime">
         </el-table-column>
-        <el-table-column prop="fields.startTime" label="startTime">
+        <el-table-column sortable min-width="220" prop="fields.startTime" label="startTime">
         </el-table-column>
-        <el-table-column prop="fields.endTime" label="endTime">
+        <el-table-column sortable min-width="220" prop="fields.endTime" label="endTime">
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column fixed="right" min-width="240" label="操作">
           <template slot-scope="scope">
             <!-- 修改按钮 -->
             <el-tooltip
@@ -66,6 +66,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-size="queryInfo.pagesize"
+        :page-sizes="[1, 2, 5, 10]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total=this.total>
+      </el-pagination>
     </el-card>
   </div>
 </template>
@@ -80,7 +89,7 @@
           pagesize: 10
         },
         total: 0,
-        hotelList: [],
+        hotelList: []
       }
     },
     // 生命周期函数
@@ -135,6 +144,17 @@
         if (result.error_num !== 0) return this.$message.error(result.msg)
         this.getHotelList()
         this.$message.success(result.msg)
+      },
+      //  分页
+      handleSizeChange(newSize) {
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getHotelList()
+      },
+      handleCurrentChange(newPage) {
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
+        this.getHotelList()
       }
     }
   }

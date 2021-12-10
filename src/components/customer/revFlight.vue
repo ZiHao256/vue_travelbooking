@@ -8,18 +8,36 @@
     </el-breadcrumb>
     <!-- 卡片视图区域 -->
     <el-card>
-      <el-table :data="flightList" border strip>
-        <el-table-column prop="pk" label="resvKey"></el-table-column>
-        <el-table-column prop="fields.flightNum" label="flightNum"></el-table-column>
-        <el-table-column prop="fields.resStatus" label="resStatus">
+      <el-table ref="filterTable" :data="flightList" border strip :default-sort="{prop:'pk', order: 'descending'}">
+        <el-table-column sortable min-width="130" prop="pk" label="resvKey"></el-table-column>
+        <el-table-column sortable min-width="130" prop="fields.flightNum" label="flightNum"></el-table-column>
+        <el-table-column sortable min-width="130" prop="fields.resStatus" label="resStatus">
         </el-table-column>
-        <el-table-column prop="fields.buildTime" label="buildTime">
+        <!--        <el-table-column-->
+        <!--          prop="fields.resStatus"-->
+        <!--          label="状态"-->
+        <!--          width="120"-->
+        <!--          sortable-->
+        <!--          :filters="[{text:'已预约',value:'已预约'},{text: '订单已开始', value: '订单已开始'},{text:'订单已完成', value:'订单已完成'}]"-->
+        <!--          :filter-method="filterTag"-->
+        <!--          filter-placement="bottom-end"-->
+        <!--        >-->
+        <!--          <template slot-scope="scope">-->
+        <!--            <el-tag :type="scope.row.fields.resStatus === '已预约' ? 'primary' :'success' " disable-transitions>-->
+        <!--              {{scope.row.fields.resStatus}}-->
+        <!--            </el-tag>-->
+        <!--            <el-tag :type="scope.row.fields.resStatus === '订单已完成' ? 'info' :'success' " disable-transitions>-->
+        <!--              {{scope.row.fields.resStatus}}-->
+        <!--            </el-tag>-->
+        <!--          </template>-->
+        <!--        </el-table-column>-->
+        <el-table-column sortable min-width="220" prop="fields.buildTime" label="buildTime">
         </el-table-column>
-        <el-table-column prop="fields.startTime" label="startTime">
+        <el-table-column sortable min-width="220" prop="fields.startTime" label="startTime">
         </el-table-column>
-        <el-table-column prop="fields.endTime" label="endTime">
+        <el-table-column sortable min-width="220" prop="fields.endTime" label="endTime">
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column fixed="right" min-width="240" label="操作">
           <template slot-scope="scope">
             <!-- 开始按钮 -->
             <el-tooltip
@@ -49,6 +67,20 @@
                 @click="endFlight(scope.row)"
               ></el-button>
             </el-tooltip>
+            <!-- 查看路线按钮 -->
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="查看旅游路线"
+              placement="top"
+            >
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-view"
+                @click="showLines(scope.row)"
+              ></el-button>
+            </el-tooltip>
             <!-- 取消按钮 -->
             <el-tooltip
               class="item"
@@ -63,23 +95,18 @@
                 @click="cancelFlight(scope.row)"
               ></el-button>
             </el-tooltip>
-            <!-- 查看路线按钮 -->
-            <el-tooltip
-              class="item"
-              effect="dark"
-              content="查看旅游路线"
-              placement="top"
-            >
-              <el-button
-                type="primary"
-                size="mini"
-                icon="el-icon-delete"
-                @click="showLines(scope.row)"
-              ></el-button>
-            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-sizes="[1, 2, 5, 10]"
+        :page-size="queryInfo.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total=this.total>
+      </el-pagination>
     </el-card>
     <el-dialog title="查看以该航班开始的旅游路线" :visible.sync="showLinesDialog" width="50%">
       <span>
@@ -90,8 +117,8 @@
           </el-alert>
           <el-alert
             v-if="!is_complete"
-              title="旅游路线不完整！"
-              type="warning">
+            title="旅游路线不完整！"
+            type="warning">
           </el-alert>
       </span>
       <el-carousel :interval="4000" type="card" height="200px">
@@ -197,7 +224,27 @@
         console.log(result)
         this.is_complete = result.is_complete
         this.line = result.line
-      }
+      },
+      //  分页
+      handleSizeChange(newSize) {
+        console.log(newSize)
+        this.queryInfo.pagesize = newSize
+        this.getFlightList()
+      },
+      handleCurrentChange(newPage) {
+        console.log(newPage)
+        this.queryInfo.pagenum = newPage
+        this.getFlightList()
+      },
+
+
+      //   //  过滤器
+      //   filterTag(value, row, column) {
+      //     const property = column['property']
+      //     return row[property] === value;
+      //   },
+      // //
+
     }
   }
 </script>
